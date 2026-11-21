@@ -1,9 +1,10 @@
 ---
 title: "Problem Set 4"
 author: "Bruk Esayas"
-date: today
+date: 11/20/2026
 format:
   html:
+    theme: none
     toc: true
     embed-resources: true
 execute:
@@ -79,7 +80,31 @@ liquor_fit |>
   kable(digits = 3)
 ```
 
-Residuals are centered at 0 and normal, but a few ACF spikes (ie. lag 24) are outside the bounds. Ljung-Box test rejects white noise (p<0.05), so some of the seasonal features are left over. The horse race will show us whether or not that hurts our forecast.
+Residuals centered at 0 and normal, but a few ACF spikes (ie. lag 24) are outside the bounds. Ljung-Box test rejects white noise (p<0.05), so some of the seasonal features are left over. The horse race will show us whether or not that hurts our forecast.
+
+### 2.3 The Horse Race
+
+```{r}
+#| echo: false
+readRDS("results/liquor_acc.rds") |> kable(digits = 2)
+```
+
+216 forecast origins (336 months minus the 120-month first training sample, minus the last one with no actual value). First forecast: Jan 2002. Last: Dec 2019. ARIMA is most accurate (RMSE 81.4, MAE 65.7), then ETS, then the seasonal random walk. Both metrics agree.
+
+### 2.4 DM Tests
+
+ARIMA vs. ETS: DM = -2.91, p = 0.004. ARIMA vs. SNAIVE: DM = -10.76, p < 0.001. ARIMA is significantly more accurate than both, so I'd use ARIMA for the liquor chain.
+
+## Forecast Combination
+
+```{r}
+#| echo: false
+readRDS("results/liquor_combo_acc.rds") |> kable(digits = 2)
+```
+
+The combo (RMSE 85.2) beats ETS but not ARIMA. It lands between the two.
+
+The correlation between ARIMA and ETS errors is 0.88, so the two models mostly make the same mistakes and there's little to average out. Since ARIMA is also significantly better (DM test), giving ETS half the weight drags the combo down.
 
 ## VAR vs. BVAR
 
@@ -165,3 +190,9 @@ readRDS("results/cpi_race.rds") |> kable(digits = 3)
 ```
 
 Yes, addding in factors cuts the RMSE of 12 month CPI inflation forecasts (from 2.11 to 1.89, about a 10.2% reduction). MAE drops from 1.58 to 1.35. The DM p-value is 0.0004 which means the improvement is statistically significant.
+
+## Reflection
+
+Simple models were hard to beat when complex ones had too many things to estimate. VAR1 beat VAR4, and ARIMA's leftover residual correlation didn't stop it from winning. The thing that kept coming up was lowering the estimation error. Shrinkage pushes coefficients toward zero while equal weights skip estimating combination weights and factors squeeze 121 different series into 3. Each has a tradeoff of a bit of bias for less variance.I t can be pushed too far, (like w/ lambda = 0.05). 
+
+DM tests also showed that many RMSE differences aren't significant which implies small gaps shouldn't drive model choice.
