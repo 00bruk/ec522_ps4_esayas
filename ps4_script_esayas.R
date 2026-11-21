@@ -48,22 +48,24 @@ liquor_fit <- liquor |>
 liquor_fit |> select(arima) |> report()
 liquor_fit |> select(ets) |> report()
 
-# # 2.2b
-# liquor_fit |> select(arima) |> gg_tsresiduals()
+# 2.2b
+liquor_fit |> select(arima) |> gg_tsresiduals()
 
-# liquor_fit |>
-#   select(arima) |>
-#   augment() |>
-#   features(.innov, ljung_box, lag = 24, dof = ___)
+liquor_fit |>
+  select(arima) |>
+  augment() |>
+  features(.innov, ljung_box, lag = 24, dof = 6)
 
-#   # 2.3a
-# liquor_cv <- liquor |>
-#   stretch_tsibble(.init = 120, .step = 1) |>
-#   filter(.id < max(.id))
+saveRDS(liquor_fit, "results/liquor_fit.rds")
 
-# liquor_cv_fit <- liquor_cv |>
-#   model(snaive = SNAIVE(sales),
-#         ets    = ETS(log(sales)),
-#         arima  = ARIMA(log(sales)))
+# 2.3a
+liquor_cv <- liquor |>
+  stretch_tsibble(.init = 120, .step = 1) |>
+  filter(.id < max(.id))
 
-# saveRDS(liquor_cv_fit, "results/liquor_cv_fit.rds")
+liquor_cv_fit <- liquor_cv |>
+  model(snaive = SNAIVE(sales),
+        ets    = ETS(log(sales)),
+        arima  = ARIMA(log(sales)))
+
+saveRDS(liquor_cv_fit, "results/liquor_cv_fit.rds")
