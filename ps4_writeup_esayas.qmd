@@ -55,3 +55,38 @@ liquor |>
 ```
 
 Sales are trending up from 1992-2019. The holidays show a peak each year (December) with January to February being the lowest. The seasonal swing is growing with the level of sales but displays stability when logged, so I would apply log of sales.
+
+### 2.2 Fit Both Models
+
+```{r}
+#| echo: false
+liquor_fit <- readRDS("results/liquor_fit.rds")
+
+liquor_fit |> select(arima) |> report()
+liquor_fit |> select(ets) |> report()
+```
+
+ARIMA chose ARIMA(1,0,2)(2,1,1)[12] w/ drift.  Series was not differenced (d = 0) but seasonally differenced one time (D = 1), so each month is compared to the same month from a year earlier. ETS chose ETS(A,A,A): additive errors, additive trend, and additive seasonality. Since the model is on log of sales, additive seasonality implies that the seasonalswings are a constant % of the level.
+
+```{r}
+#| echo: false
+liquor_fit |> select(arima) |> gg_tsresiduals()
+
+liquor_fit |>
+  select(arima) |>
+  augment() |>
+  features(.innov, ljung_box, lag = 24, dof = 6) |>
+  kable(digits = 3)
+```
+
+Residuals are centered at 0 and normal, but a few ACF spikes (ie. lag 24) are outside the bounds. Ljung-Box test rejects white noise (p<0.05), so some of the seasonal features are left over. The horse race will show us whether or not that hurts our forecast.
+
+## VAR vs. BVAR
+
+### 4.1 Data
+
+120 forecasts pervariable (240 quarters minus the 120-quarter training sample). First forecast is 1990 Q1 and the last 2019 Q4.
+
+### 4.2 OLS VARs
+
+VAR1 beats VAR4 for 7/8 variables (all except for inflation which nearly tied). VAR4 has 264 coefficients vs 72 for VAR1). It is overfitting noise from the training sample which adds some estimation error to its forecasts.
