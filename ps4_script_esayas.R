@@ -258,7 +258,9 @@ for (T in init:(n - 1)) {
   e_ar <- c(e_ar, ip[T + 1] - predict(lm(y_next ~ y, d), new))
   e_fa <- c(e_fa, ip[T + 1] - predict(lm(y_next ~ ., d), new))
 }
-c(RMSE_AR = sqrt(mean(e_ar^2)), RMSE_FA = sqrt(mean(e_fa^2)))
+ip_rmse <- c(RMSE_AR = sqrt(mean(e_ar^2)), RMSE_FA = sqrt(mean(e_fa^2)))
+ip_rmse
+saveRDS(ip_rmse, "results/ip_rmse.rds")
 
 # 5.4
 direct_race <- function(series, h = 12, r = 3) {
@@ -284,4 +286,7 @@ direct_race <- function(series, h = 12, r = 3) {
          DM_pvalue = forecast::dm.test(e_ar, e_fa, h = h, power = 2,
                                        varestimator = "bartlett")$p.value)
 }
-direct_race("CPIAUCSL")
+
+cpi_race <- direct_race("CPIAUCSL")
+cpi_race
+saveRDS(cpi_race, "results/cpi_race.rds")
