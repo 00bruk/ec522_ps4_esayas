@@ -54,3 +54,4 @@ liquor |>
   theme_minimal()
 ```
 
+Sales are trending up from 1992-2019. The holidays show a peak each year (December) with January to February being the lowest. The seasonal swing is growing with the level of sales but displays stability when logged, so I would apply log of sales.
